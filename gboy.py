@@ -7,6 +7,7 @@ import pytmx
 import copy
 import random
 import pytmx.util_pygame
+import datetime
 
 TITLE = 'GBOY'
 COLORS = [
@@ -329,6 +330,7 @@ class World:
         
         self.keys = 0
 
+
         # get key count
         for row in self.tmx.layers[0].data:
             for gid in row:
@@ -339,6 +341,7 @@ class World:
                     self.keys += 1
 
         self.next_level = False
+        self.time = 0
         
     def attach(self, obj):
         if not obj.attached:
@@ -415,11 +418,12 @@ class World:
         #print 'none'
         #return False
         
-    def logic(self):
+    def logic(self, t):
         if self.next_level:
             self.game.level += 1
             self.next_level = False
             self.game.reset()
+        self.time += t
         
     def render(self, view):
         tw = self.tmx.tilewidth
@@ -544,7 +548,7 @@ class Game:
 
             #self.guy.strafe = pygame.K_LSHIFT in self.keys
             
-            self.world.logic()
+            self.world.logic(t)
 
             if not self.guy.attached:
                 self.reset()
@@ -591,8 +595,10 @@ class Game:
             view.y = max(0, min(view.y, self.world.sz.y - SCREEN_H))
             self.world.render(view)
             
-            #pygame.draw.rect(self.screen.buf, COLORS[0], [0, 0, SCREEN_W, 10])
-            #self.screen.buf.blit(self.font.render("KD:0-0", 1, COLORS[3]), (0,0))
+            pygame.draw.rect(self.screen.buf, COLORS[0], [0, 0, SCREEN_W, 10])
+            
+            time = str(datetime.timedelta(seconds=self.world.time))
+            self.screen.buf.blit(self.font.render(time, 1, COLORS[3]), (0,0))
         
         elif self.mode == self.TITLE:
             
