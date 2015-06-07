@@ -158,7 +158,13 @@ class Guy(Object):
                 if self.on_ladder:
                     self.move += euclid.Vector2(joy.get_axis(0), joy.get_axis(1))
                 else:
-                    self.move += euclid.Vector2(joy.get_axis(0), 0.0)
+                    ax = joy.get_axis(0)
+                    # snap close axis values to max value
+                    if ax > 0.99:
+                        ax = 1.0
+                    elif ax < -0.99:
+                        ax = -1.0
+                    self.move += euclid.Vector2(ax, 0.0)
             elif joy.get_hat(0)[0] != 0:
                 if self.on_ladder:
                     self.move += euclid.Vector2(joy.get_hat(0)[0], joy.get_hat(0)[1])
