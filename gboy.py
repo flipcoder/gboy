@@ -422,6 +422,7 @@ class World:
         if self.next_level:
             self.game.level += 1
             self.next_level = False
+            print self.time # temp
             self.game.reset()
         self.time += t
         
@@ -595,10 +596,11 @@ class Game:
             view.y = max(0, min(view.y, self.world.sz.y - SCREEN_H))
             self.world.render(view)
             
-            pygame.draw.rect(self.screen.buf, COLORS[0], [0, 0, SCREEN_W, 10])
             
-            time = str(datetime.timedelta(seconds=self.world.time))
-            self.screen.buf.blit(self.font.render(time, 1, COLORS[3]), (0,0))
+            if self.guy.pos.y >= self.guy.sz.y:
+                pygame.draw.rect(self.screen.buf, COLORS[0], [0, 0, SCREEN_W, 10])
+                time = str(datetime.timedelta(seconds=self.world.time))
+                self.screen.buf.blit(self.font.render(time, 1, COLORS[3]), (0,0))
         
         elif self.mode == self.TITLE:
             
