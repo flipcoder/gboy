@@ -463,7 +463,7 @@ class Game:
         if len(sys.argv) >= 2:
             self.level = sys.argv[1]
         else:
-            self.level = 6 #TEMP
+            self.level = 1
         #self.reset_snd = pygame.mixer.Sound('./data/sfx/hurt.wav')
         self.chan = pygame.mixer.Channel(1)
         
