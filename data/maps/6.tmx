@@ -24,7 +24,7 @@
   </tile>
  </tileset>
  <objectgroup name="Object Layer 1">
-  <object id="1" name="S" x="215.5" y="59.75" width="10" height="10"/>
+  <object id="1" name="S" x="28" y="11.5" width="10" height="10"/>
  </objectgroup>
  <layer name="Tile Layer 1" width="60" height="100">
   <data encoding="csv">
