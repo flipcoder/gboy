@@ -23,6 +23,7 @@ SCREEN_SZ = (SCREEN_W, SCREEN_H)
 SCALED_SZ = (SCALE * SCREEN_W, SCALE * SCREEN_H)
 FONT = './data/fonts/Early GameBoy.ttf'
 TRANS = (255,0,255)
+JOY_AXIS = 0
 
 def sgn(a):
     return (a > 0) - (a < 0)
@@ -155,18 +156,19 @@ class Guy(Object):
                 self.shoot()
 
         for joy in self.game.joys:
-            if abs(joy.get_axis(0)) > 0.2:
+            ax = JOY_AXIS
+            if abs(joy.get_axis(ax)) > 0.2:
                 if self.on_ladder:
-                    self.move += euclid.Vector2(joy.get_axis(0), joy.get_axis(1))
+                    self.move += euclid.Vector2(joy.get_axis(ax), joy.get_axis(ax+1))
                 else:
-                    ax = joy.get_axis(0)
+                    ax = joy.get_axis(ax)
                     # snap close axis values to max value
-                    if ax > 0.99:
+                    if ax > 0.9:
                         ax = 1.0
-                    elif ax < -0.99:
+                    elif ax < -0.9:
                         ax = -1.0
                     self.move += euclid.Vector2(ax, 0.0)
-            elif joy.get_hat(0)[0] != 0:
+            elif joy.get_numhats() > 0 and joy.get_hat(0)[0] != 0:
                 if self.on_ladder:
                     self.move += euclid.Vector2(joy.get_hat(0)[0], joy.get_hat(0)[1])
                 else:
@@ -599,8 +601,14 @@ class Game:
             
             if self.guy.pos.y >= self.guy.sz.y:
                 pygame.draw.rect(self.screen.buf, COLORS[0], [0, 0, SCREEN_W, 10])
-                time = str(datetime.timedelta(seconds=self.world.time))
-                self.screen.buf.blit(self.font.render(time, 1, COLORS[3]), (0,0))
+                tim = str(datetime.timedelta(seconds=self.world.time))
+                tim = str(tim)
+                try:
+                    tim = tim[:tim.index('.')+3]
+                except ValueError:
+                    pass
+                tx = "lev %s . %s" % (self.level,tim)
+                self.screen.buf.blit(self.font.render(tx, 1, COLORS[3]), (0,0))
         
         elif self.mode == self.TITLE:
             
