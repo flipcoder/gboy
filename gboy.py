@@ -606,8 +606,10 @@ class Game:
                 try:
                     tim = tim[:tim.index('.')+3]
                 except ValueError:
+                    tim += ".00"
                     pass
-                tx = "lev %s . %s" % (self.level,tim)
+                tx = "lev " + str(self.level)
+                tx += " " * (20 - len(tim)) + tim
                 self.screen.buf.blit(self.font.render(tx, 1, COLORS[3]), (0,0))
         
         elif self.mode == self.TITLE:
