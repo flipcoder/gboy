@@ -465,16 +465,16 @@ class Game:
         self.joys = []
         idx = 0
         while True:
-            idx+=1
             joy = None
             try:
                 joy = pygame.joystick.Joystick(idx)
-            except:
-                pass
+            except pygame.error:
+                break
             if not joy:
                 break
             joy.init()
             self.joys += [joy]
+            idx+=1
 
         self.TITLE = 0
         self.GAME = 1
