@@ -308,9 +308,16 @@ class Tile:
     def __init__(self, surface):
         self.surface = surface
 
+class NoSuchLevel(Exception):
+    pass
+
 class World:
     def __init__(self, fn, game):
-        self.tmx = pytmx.util_pygame.load_pygame(fn)
+        try:
+            self.tmx = pytmx.util_pygame.load_pygame(fn)
+        except IOError:
+            raise NoSuchLevel
+            
         for img in self.tmx.images:
             if img:
                 img.set_colorkey(TRANS)
@@ -421,12 +428,17 @@ class World:
         #return False
         
     def logic(self, t):
+        r = False
         if self.next_level:
             self.game.level += 1
             self.next_level = False
             print self.time # temp
-            self.game.reset()
+            r = True
+            
         self.time += t
+        
+        if r:
+            self.game.reset()
         
     def render(self, view):
         tw = self.tmx.tilewidth
@@ -466,6 +478,7 @@ class Game:
 
         self.TITLE = 0
         self.GAME = 1
+        self.WIN = 2
         self.mode = self.TITLE
         
         pygame.display.set_caption(TITLE)
@@ -484,6 +497,10 @@ class Game:
         self.world = None
         self.reset()
 
+    def clear(self):
+        self.world = None
+        self.guy = None
+
     def reset(self):
         
         #pygame.mixer.music.play()
@@ -494,7 +511,7 @@ class Game:
         self.world = World('./data/maps/%s.tmx' % self.level, self)
         if self.guy:
             self.guy.attached = False
-            self.clean()
+            self.flush()
         s = self.world.spawns[random.randint(0,len(self.world.spawns)-1)]
         self.guy = Guy(game=self, pos=(s.x, s.y))
 
@@ -511,7 +528,7 @@ class Game:
         
         return 0
        
-    def clean(self):
+    def flush(self):
         
         self.world.objects = filter(lambda obj: obj.attached, self.world.objects)
         
@@ -551,12 +568,17 @@ class Game:
 
             #self.guy.strafe = pygame.K_LSHIFT in self.keys
             
-            self.world.logic(t)
-
+            try:
+                self.world.logic(t)
+            except NoSuchLevel:
+                self.mode = self.WIN
+                self.clear()
+                return
+                
             if not self.guy.attached:
                 self.reset()
             
-            self.clean()
+            self.flush()
             for obj in self.world.objects:
                 obj.logic(t)
 
@@ -584,7 +606,19 @@ class Game:
             for joy in self.joys:
                 if joy.get_button(0):
                         self.mode = self.GAME
-    
+        elif self.mode == self.WIN:
+            for ev in pygame.event.get():
+                if ev.type == pygame.QUIT:
+                    self.done = True
+                elif ev.type == pygame.KEYDOWN:
+                    if ev.key == pygame.K_q:
+                        self.done = True
+                    if ev.key == pygame.K_SPACE or ev.key == pygame.K_RETURN:
+                        self.done = True
+            for joy in self.joys:
+                if joy.get_button(0):
+                        self.done = True
+
     def render(self):
         
         self.screen.buf.fill(COLORS[0])
@@ -629,6 +663,24 @@ class Game:
             for line in text:
                 self.screen.buf.blit(self.font.render(line, 1, COLORS[3]), ((10- len(line)/2)*7,idx))
                 idx += 10
+        
+        elif self.mode == self.WIN:
+            idx = 0
+            text = [
+                'wow wtf',
+                '',
+                'how did you win',
+                '',
+                'well good job',
+                '',
+                'idiot',
+                '',
+                'lol'
+            ]
+            for line in text:
+                self.screen.buf.blit(self.font.render(line, 1, COLORS[3]), ((10- len(line)/2)*7,idx))
+                idx += 10
+
         
     def draw(self):
         
